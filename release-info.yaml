@@ -1,5 +1,5 @@
 project: pkg.storm/latest
-repo: example
+repo: storm
 platforms:
   - centos6
   - centos7
