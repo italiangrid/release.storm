@@ -1,0 +1,5 @@
+project: pkg.storm/latest
+repo: example
+platforms:
+  - centos6
+  - centos7
