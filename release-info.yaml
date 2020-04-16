@@ -1,4 +1,4 @@
-project: pkg.storm/nightly
+project: pkg.storm/v1.11.18
 repo: storm
 platforms:
   - centos6
