@@ -111,6 +111,8 @@ pipeline {
     NEXUS_CRED = credentials('jenkins-nexus')
   }
 
+  triggers { cron('@daily') }
+
   stages {
 
     stage('checkout') {
