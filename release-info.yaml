@@ -1,4 +1,4 @@
-project: pkg.storm/v1.11.18
+project: pkg.storm/v1.11.19
 repo: storm
 platforms:
   - centos6
