@@ -2,7 +2,9 @@
 
 def buildRepoName(repo, platform) {
 
-  if (platform ==~ /^centos\d+/) {
+  if (platform == "centos7java11") { //fix for centos7java11
+    return "${repo}-rpm-${env.BRANCH_NAME}"
+  } else if (platform ==~ /^centos\d+/) {
     return "${repo}-rpm-${env.BRANCH_NAME}"
   } else if (platform ==~ /^ubuntu\d+/) {
     return "${repo}-deb-${env.BRANCH_NAME}-${platform}"
@@ -13,7 +15,9 @@ def buildRepoName(repo, platform) {
 
 def removePackages(repo, platform) {
 
-  if (platform ==~ /^centos\d+/) {
+  if (platform == "centos7java11") { //fix for centos7java11
+    sh "nexus-assets-remove -u ${env.NEXUS_CRED_USR} -p ${env.NEXUS_CRED_PSW} -H ${env.NEXUS_HOST} -r ${repo} -q centos7"
+  } else if (platform ==~ /^centos\d+/) {
     sh "nexus-assets-remove -u ${env.NEXUS_CRED_USR} -p ${env.NEXUS_CRED_PSW} -H ${env.NEXUS_HOST} -r ${repo} -q ${platform}"
   } else if (platform ==~ /^ubuntu\d+/) {
     sh "nexus-assets-remove -u ${env.NEXUS_CRED_USR} -p ${env.NEXUS_CRED_PSW} -H ${env.NEXUS_HOST} -r ${repo} -q packages"
@@ -25,7 +29,9 @@ def removePackages(repo, platform) {
 
 def publish(repo, platform) {
 
-  if (platform ==~ /^centos\d+/) {
+  if (platform == "centos7java11") { //fix for centos7java11
+    sh "nexus-assets-flat-upload -u ${env.NEXUS_CRED_USR} -p ${env.NEXUS_CRED_PSW} -H ${env.NEXUS_HOST} -r ${repo}/centos7 -d artifacts/packages/${platform}/RPMS"
+  } else if (platform ==~ /^centos\d+/) {
     sh "nexus-assets-flat-upload -u ${env.NEXUS_CRED_USR} -p ${env.NEXUS_CRED_PSW} -H ${env.NEXUS_HOST} -r ${repo}/${platform} -d artifacts/packages/${platform}/RPMS"
   } else if (platform ==~ /^ubuntu\d+/) {
     sh "nexus-assets-flat-upload -f -u ${env.NEXUS_CRED_USR} -p ${env.NEXUS_CRED_PSW} -H ${env.NEXUS_HOST} -r ${repo} -d artifacts/packages/${platform}"
