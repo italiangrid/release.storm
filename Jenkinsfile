@@ -1,24 +1,35 @@
 #!/usr/bin/env groovy
 
+def platform2Repo = [
+  "centos7" : "centos7",
+  "centos7java11" : "centos7",
+  "centos6": "centos6"
+]
+
 def buildRepoName(repo, platform) {
 
-  if (platform == "centos7java11") { //fix for centos7java11
-    return "${repo}-rpm-${env.BRANCH_NAME}"
-  } else if (platform ==~ /^centos\d+/) {
-    return "${repo}-rpm-${env.BRANCH_NAME}"
+  def repoName
+  if (platform ==~ /^centos\d+.*/) {
+    repoName = "${repo}-rpm-${env.BRANCH_NAME}"
   } else if (platform ==~ /^ubuntu\d+/) {
-    return "${repo}-deb-${env.BRANCH_NAME}-${platform}"
+    repoName = "${repo}-deb-${env.BRANCH_NAME}-${platform}"
   } else {
     error("Unsupported platform: ${platform}")
   }
+  echo "Repo name: $repoName"
+  return repoName
 }
 
-def removePackages(repo, platform) {
+def removePackages(repo, platform, platform2Repo) {
 
-  if (platform == "centos7java11") { //fix for centos7java11
-    sh "nexus-assets-remove -u ${env.NEXUS_CRED_USR} -p ${env.NEXUS_CRED_PSW} -H ${env.NEXUS_HOST} -r ${repo} -q centos7"
-  } else if (platform ==~ /^centos\d+/) {
-    sh "nexus-assets-remove -u ${env.NEXUS_CRED_USR} -p ${env.NEXUS_CRED_PSW} -H ${env.NEXUS_HOST} -r ${repo} -q ${platform}"
+  def platformRepo = platform2Repo[platform]
+  if (!platformRepo) {
+    error("Unknown platform: ${platform}")
+  }
+  echo "platformRepo = $platformRepo"
+
+  if (platform ==~ /^centos\d+.*/) {
+    sh "nexus-assets-remove -u ${env.NEXUS_CRED_USR} -p ${env.NEXUS_CRED_PSW} -H ${env.NEXUS_HOST} -r ${repo} -q ${platformRepo}"
   } else if (platform ==~ /^ubuntu\d+/) {
     sh "nexus-assets-remove -u ${env.NEXUS_CRED_USR} -p ${env.NEXUS_CRED_PSW} -H ${env.NEXUS_HOST} -r ${repo} -q packages"
     sh "nexus-assets-remove -u ${env.NEXUS_CRED_USR} -p ${env.NEXUS_CRED_PSW} -H ${env.NEXUS_HOST} -r ${repo} -q metadata"
@@ -27,12 +38,16 @@ def removePackages(repo, platform) {
   }
 }
 
-def publish(repo, platform) {
+def publish(repo, platform, platform2Repo) {
 
-  if (platform == "centos7java11") { //fix for centos7java11
-    sh "nexus-assets-flat-upload -u ${env.NEXUS_CRED_USR} -p ${env.NEXUS_CRED_PSW} -H ${env.NEXUS_HOST} -r ${repo}/centos7 -d artifacts/packages/${platform}/RPMS"
-  } else if (platform ==~ /^centos\d+/) {
-    sh "nexus-assets-flat-upload -u ${env.NEXUS_CRED_USR} -p ${env.NEXUS_CRED_PSW} -H ${env.NEXUS_HOST} -r ${repo}/${platform} -d artifacts/packages/${platform}/RPMS"
+  def platformRepo = platform2Repo[platform]
+  if (!platformRepo) {
+    error("Unknown platform: ${platform}")
+  }
+  echo "platformRepo = $platformRepo"
+
+  if (platform ==~ /^centos\d+.*/) {
+    sh "nexus-assets-flat-upload -u ${env.NEXUS_CRED_USR} -p ${env.NEXUS_CRED_PSW} -H ${env.NEXUS_HOST} -r ${repo}/${platformRepo} -d artifacts/packages/${platform}/RPMS"
   } else if (platform ==~ /^ubuntu\d+/) {
     sh "nexus-assets-flat-upload -f -u ${env.NEXUS_CRED_USR} -p ${env.NEXUS_CRED_PSW} -H ${env.NEXUS_HOST} -r ${repo} -d artifacts/packages/${platform}"
   } else {
@@ -40,19 +55,19 @@ def publish(repo, platform) {
   }
 }
 
-def doPlatform(repo, platform) {
+def doPlatform(repo, platform, platform2Repo) {
   return {
     def repoName = buildRepoName(repo, platform)
 
     if (env.CLEANUP_REPO) {
-      removePackages(repoName, platform)
+      removePackages(repoName, platform, platform2Repo)
     }
 
-    publish(repoName, platform)
+    publish(repoName, platform, platform2Repo)
   }
 }
 
-def publishPackages(releaseInfo) {
+def publishPackages(releaseInfo,platform2Repo) {
 
   copyArtifacts filter: 'artifacts/**', fingerprintArtifacts: true, projectName: "${releaseInfo.project}", target: '.'
 
@@ -62,15 +77,15 @@ def publishPackages(releaseInfo) {
   echo "Publish for the following ${platforms}"
 
   def publishStages = platforms.collectEntries {
-    [ "${env.BRANCH_NAME} - ${it}" : doPlatform(repo,it) ]
+    [ "${env.BRANCH_NAME} - ${it}" : doPlatform(repo,it,platform2Repo) ]
   }
 
   parallel publishStages
 }
 
-def doPublish() {
+def doPublish(platform2Repo) {
   def releaseInfo = readYaml file:'release-info.yaml'
-  publishPackages(releaseInfo)
+  publishPackages(releaseInfo,platform2Repo)
 }
 
 pipeline {
@@ -126,7 +141,7 @@ pipeline {
 
       steps {
         script {
-          doPublish()
+          doPublish(platform2Repo)
         }
       }
     }
