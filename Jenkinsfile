@@ -124,7 +124,7 @@ pipeline {
 
       steps {
         script {
-          doPublish()
+          doPublish(platform2Repo)
         }
       }
     }
@@ -154,7 +154,7 @@ pipeline {
 
       steps {
         script {
-          doPublish()
+          doPublish(platform2Repo)
         }
       }
     }
