@@ -1,5 +1,4 @@
 project: pkg.storm/nightly
 repo: storm
 platforms:
-  - centos7
-  - centos8
+  - centos7java11
