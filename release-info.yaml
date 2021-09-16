@@ -1,4 +1,4 @@
-project: pkg.storm/v1.11.21
+project: pkg.storm/nightly
 repo: storm
 platforms:
   - centos7java11

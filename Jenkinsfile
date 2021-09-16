@@ -1,6 +1,7 @@
 #!/usr/bin/env groovy
 
 def platform2Repo = [
+  "centos8" : "centos8",
   "centos7" : "centos7",
   "centos7java11" : "centos7",
   "centos6": "centos6"
