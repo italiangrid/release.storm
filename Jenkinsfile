@@ -88,19 +88,6 @@ def doPublish(platform2Repo) {
   publishPackages(releaseInfo,platform2Repo)
 }
 
-def isBranchIndexingCause() {
-  def isBranchIndexing = false
-  if (!currentBuild.rawBuild) {
-    return true
-  }
-  currentBuild.rawBuild.getCauses().each { cause ->
-    if (cause instanceof jenkins.branch.BranchIndexingCause) {
-      isBranchIndexing = true
-    }
-  }
-  return isBranchIndexing
-}
-
 pipeline {
 
   agent {
@@ -167,9 +154,7 @@ pipeline {
 
       steps {
         script {
-          if (!isBranchIndexingCause()) {
-            doPublish(platform2Repo)
-          }
+          doPublish(platform2Repo)
         }
       }
     }
