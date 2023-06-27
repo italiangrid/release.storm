@@ -1,4 +1,4 @@
-project: pkg.storm/v1.12.0
+project: pkg.storm/v1.11.22
 repo: storm
 platforms:
   - centos7java11
