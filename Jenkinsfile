@@ -4,7 +4,7 @@ def platform2Repo = [
   "centos7" : "centos7",
   "centos7java11" : "centos7",
   "centos6": "centos6",
-  "almalinux9java17": "almalinux9"
+  "almalinux9java17": "redhat9"
 ]
 
 def buildRepoName(repo, platform) {
