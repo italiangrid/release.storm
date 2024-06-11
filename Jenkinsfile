@@ -3,13 +3,16 @@
 def platform2Repo = [
   "centos7" : "centos7",
   "centos7java11" : "centos7",
-  "centos6": "centos6"
+  "centos6": "centos6",
+  "almalinux9java17": "almalinux9"
 ]
 
 def buildRepoName(repo, platform) {
 
   def repoName
   if (platform ==~ /^centos\d+.*/) {
+    repoName = "${repo}-rpm-${env.BRANCH_NAME}"
+  } else if (platform ==~ /^almalinux\d+.*/) {
     repoName = "${repo}-rpm-${env.BRANCH_NAME}"
   } else if (platform ==~ /^ubuntu\d+/) {
     repoName = "${repo}-deb-${env.BRANCH_NAME}-${platform}"
@@ -30,6 +33,8 @@ def removePackages(repo, platform, platform2Repo) {
 
   if (platform ==~ /^centos\d+.*/) {
     sh 'nexus-assets-remove -u $NEXUS_CRED_USR -p $NEXUS_CRED_PSW -H $NEXUS_HOST -r ' + repo + ' -q ' + platformRepo
+  } else if (platform ==~ /^almalinux\d+.*/) {
+    sh 'nexus-assets-remove -u $NEXUS_CRED_USR -p $NEXUS_CRED_PSW -H $NEXUS_HOST -r ' + repo + ' -q ' + platformRepo
   } else if (platform ==~ /^ubuntu\d+/) {
     sh 'nexus-assets-remove -u $NEXUS_CRED_USR -p $NEXUS_CRED_PSW -H $NEXUS_HOST -r ' + repo + ' -q packages'
     sh 'nexus-assets-remove -u $NEXUS_CRED_USR -p $NEXUS_CRED_PSW -H $NEXUS_HOST -r ' + repo + ' -q metadata'
@@ -47,6 +52,8 @@ def publish(repo, platform, platform2Repo) {
   echo "platformRepo = $platformRepo"
 
   if (platform ==~ /^centos\d+.*/) {
+    sh 'nexus-assets-flat-upload -u $NEXUS_CRED_USR -p $NEXUS_CRED_PSW -H $NEXUS_HOST -r ' + repo + '/' + platformRepo + ' -d artifacts/packages/' + platform + '/RPMS'
+  } else if (platform ==~ /^almalinux\d+.*/) {
     sh 'nexus-assets-flat-upload -u $NEXUS_CRED_USR -p $NEXUS_CRED_PSW -H $NEXUS_HOST -r ' + repo + '/' + platformRepo + ' -d artifacts/packages/' + platform + '/RPMS'
   } else if (platform ==~ /^ubuntu\d+/) {
     sh 'nexus-assets-flat-upload -f -u $NEXUS_CRED_USR -p $NEXUS_CRED_PSW -H $NEXUS_HOST -r ' + repo + ' -d artifacts/packages/' + platform

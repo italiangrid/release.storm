@@ -1,4 +1,5 @@
-project: pkg.storm/v1.11.22
+project: pkg.storm/webdav-tp
 repo: storm
 platforms:
   - centos7java11
+  - almalinux9java17
