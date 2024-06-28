@@ -1,5 +1,4 @@
-project: pkg.storm/webdav-tp
+project: pkg.storm/el9-native-libs
 repo: storm
 platforms:
-  - centos7java11
   - almalinux9java17
