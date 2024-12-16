@@ -1,4 +1,4 @@
-project: pkg.storm/redhat9
+project: pkg.storm/redhat9java17
 repo: storm
 platforms:
   - almalinux9java17
